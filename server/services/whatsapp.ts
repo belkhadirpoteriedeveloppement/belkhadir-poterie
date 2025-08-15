@@ -73,44 +73,48 @@ export class WhatsAppService {
   formatOrderMessage(orderData: OrderData): string {
     const { items, orderTotal, customer, orderId } = orderData;
 
-    // Debug: Log customer data
-    console.log("🔍 Debug customer data:", customer);
+    let message = `🏺 *NOUVELLE COMMANDE*\n`;
+    message += `📋 Commande: *${orderId}*\n\n`;
 
-    let message = `🏺 *COMMANDE ${orderId}*\n\n`;
-
-    // Customer information (shortened)
-    message += `👤 ${customer.name} ${customer.surname}\n`;
+    // Informations client
+    message += `👤 *CLIENT:*\n`;
+    message += `${customer.surname} ${customer.name}\n`;
     message += `📞 ${customer.phone}\n`;
     message += `📧 ${customer.email}\n`;
     message += `📍 ${customer.address}\n\n`;
 
-    // Products (simplified)
+    // Articles commandés
     message += `🛒 *ARTICLES:*\n`;
     items.forEach((item, index) => {
-      message += `${index + 1}. ${item.product.name}\n`;
-      message += `   ${item.variantDetails.sizeName} • ${item.variantDetails.patternName}\n`;
-      message += `   ${item.quantity}x • ${item.total.toFixed(2)} MAD\n`;
+      const colors = item.variantDetails.patternColors.join(', ');
+      message += `${index + 1}. *${item.product.name}*\n`;
+      message += `   📏 ${item.variantDetails.sizeName}\n`;
+      message += `   🎨 ${item.variantDetails.patternName}\n`;
+      if (colors) message += `   🌈 ${colors}\n`;
+      message += `   📦 ${item.quantity}x - ${item.total.toFixed(2)} MAD\n\n`;
     });
 
-    // Total and essentials
-    message += `\n💰 *TOTAL: ${orderTotal.toFixed(2)} MAD*\n`;
-    message += `⏰ Délai: 20-45 jours\n`;
-    message += `📦 CTM (frais client)\n\n`;
+    // Total et informations importantes
+    message += `💰 *TOTAL: ${orderTotal.toFixed(2)} MAD*\n\n`;
 
-    message += `📅 ${new Date().toLocaleString("fr-FR", {
+    message += `⏰ *Délai:* 20-45 jours ouvrables\n`;
+    message += `📦 *Livraison:* CTM (frais client)\n`;
+    message += `📅 *Reçu le:* ${new Date().toLocaleString("fr-FR", {
       timeZone: "Africa/Casablanca",
       day: "2-digit",
       month: "2-digit",
+      year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     })}\n\n`;
 
-    message += `✅ Contacter client pour confirmation`;
+    message += `✅ *Action requise:* Contacter le client pour confirmation de la commande`;
 
-    // Debug: Log message length and content
-    console.log(`📏 WhatsApp message length: ${message.length} characters (limit: 1600)`);
-    console.log("📝 WhatsApp message content:");
-    console.log(message);
+    // Log pour debug
+    console.log(`📏 Message WhatsApp: ${message.length} caractères`);
+    if (message.length > 1600) {
+      console.warn("⚠️ Message dépasse la limite WhatsApp de 1600 caractères");
+    }
 
     return message;
   }
