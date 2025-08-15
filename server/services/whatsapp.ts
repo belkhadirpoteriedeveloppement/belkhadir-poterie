@@ -123,22 +123,29 @@ export class WhatsAppService {
     orderData: OrderData,
   ): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
-      if (!this.client) {
-        // Simulate sending for development
-        const message = this.formatOrderMessage(orderData);
-        console.log("📱 WhatsApp Message (SIMULATION):");
-        console.log("To:", this.toNumber);
-        console.log("Message:");
+      const message = this.formatOrderMessage(orderData);
+
+      if (!this.isConfigured || !this.client) {
+        // Mode simulation pour développement
+        console.log("📱 WhatsApp Message (MODE SIMULATION):");
+        console.log("📤 Destinataire:", this.toNumber);
+        console.log("📝 Message:");
+        console.log("─".repeat(50));
         console.log(message);
+        console.log("─".repeat(50));
 
         return {
           success: true,
-          message:
-            "Order notification simulated successfully (check server logs)",
+          message: "✅ Notification simulée (consultez les logs serveur)",
         };
       }
 
-      const message = this.formatOrderMessage(orderData);
+      // Vérifier la longueur du message
+      if (message.length > 1600) {
+        console.warn("⚠️ Message trop long, troncature possible par WhatsApp");
+      }
+
+      console.log("📤 Envoi du message WhatsApp...");
 
       const result = await this.client.messages.create({
         body: message,
@@ -146,20 +153,43 @@ export class WhatsAppService {
         to: this.toNumber,
       });
 
-      console.log("WhatsApp message sent successfully:", result.sid);
+      console.log("✅ Message WhatsApp envoyé avec succès!");
+      console.log("📧 SID:", result.sid);
+      console.log("📱 Statut:", result.status);
 
       return {
         success: true,
-        message: `Order notification sent successfully to ${this.toNumber}`,
+        message: `✅ Notification envoyée au vendeur via WhatsApp (${this.toNumber})`,
       };
     } catch (error) {
-      console.error("Error sending WhatsApp message:", error);
+      console.error("❌ Erreur lors de l'envoi WhatsApp:", error);
+
+      // Logs d'erreur détaillés pour debug
+      if (error instanceof Error) {
+        console.error("📝 Message d'erreur:", error.message);
+        console.error("🔍 Stack trace:", error.stack);
+      }
 
       return {
         success: false,
-        error:
-          error instanceof Error ? error.message : "Unknown error occurred",
+        error: error instanceof Error
+          ? `Erreur WhatsApp: ${error.message}`
+          : "Erreur inconnue lors de l'envoi WhatsApp",
       };
     }
+  }
+
+  // Méthode utilitaire pour vérifier la configuration
+  isReady(): boolean {
+    return this.isConfigured && this.client !== null;
+  }
+
+  // Méthode pour obtenir les informations de configuration
+  getConfigInfo(): { isConfigured: boolean; fromNumber: string; toNumber: string } {
+    return {
+      isConfigured: this.isConfigured,
+      fromNumber: this.fromNumber,
+      toNumber: this.toNumber,
+    };
   }
 }
