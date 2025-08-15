@@ -195,7 +195,7 @@ ${customForm.freeText || "Aucune demande spéciale"}
                 <div className="mb-6">
                   <a
                     href="/creations"
-                    className="inline-flex items-center bg-gradient-to-r from-amber-600 to-orange-700 text-white px-8 py-4 rounded-lg hover:from-amber-700 hover:to-orange-800 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl"
+                    className="inline-flex items-center bg-gradient-to-r from-amber-600 to-orange-700 text-white px-8 py-4 rounded-lg hover:from-amber-700 hover:to-orange-800 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl transform hover:scale-105"
                   >
                     <ShoppingCart className="w-5 h-5 mr-2" />
                     🏺 BELKHADIR-POTERIE
