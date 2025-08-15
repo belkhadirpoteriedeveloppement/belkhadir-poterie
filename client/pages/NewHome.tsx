@@ -189,11 +189,18 @@ ${customForm.freeText || "Aucune demande spéciale"}
                   Découvrez Notre Collection
                 </h3>
                 <p className="text-lg text-amber-800 mb-6">
-                  Consultez nos produits et passez vos commandes standardisées sur notre site{" "}
-                  <a href="/creations" className="text-orange-700 font-semibold underline hover:text-orange-800">
-                    belkhadir-poterie
-                  </a>
+                  Consultez nos produits et passez vos commandes standardisées directement :
                 </p>
+
+                <div className="mb-6">
+                  <a
+                    href="/creations"
+                    className="inline-flex items-center bg-gradient-to-r from-amber-600 to-orange-700 text-white px-8 py-4 rounded-lg hover:from-amber-700 hover:to-orange-800 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl"
+                  >
+                    <ShoppingCart className="w-5 h-5 mr-2" />
+                    🏺 BELKHADIR-POTERIE
+                  </a>
+                </div>
 
                 {/* Section Personnalisation */}
                 <div className="bg-amber-50/60 rounded-xl p-6 border border-amber-300">
