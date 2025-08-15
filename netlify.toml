@@ -1,26 +1,11 @@
 [build]
-  publish = "dist/spa"
-  command = "npm run build"
-
-[build.environment]
-  NODE_VERSION = "18"
-  NPM_FLAGS = "--production=false"
-
-[[redirects]]
-  from = "/api/*"
-  to = "/.netlify/functions/api/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+command = "npm --prefix client ci && npm --prefix client run build"
+publish = "client/dist"
 
 [functions]
-  node_bundler = "esbuild"
-  directory = "netlify/functions"
+directory = "netlify/functions"
 
-[dev]
-  command = "npm run dev"
-  port = 8080
-  publish = "dist/spa"
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
