@@ -36,24 +36,38 @@ interface OrderData {
 }
 
 export class WhatsAppService {
-  private client: twilio.Twilio;
-  private fromNumber: string = "whatsapp:+14155238886"; // Twilio Sandbox number
-  private toNumber: string = "whatsapp:+212675202336";
+  private client: twilio.Twilio | null = null;
+  private fromNumber: string;
+  private toNumber: string;
+  private isConfigured: boolean = false;
 
   constructor() {
     // Initialize Twilio client with environment variables
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
+    this.fromNumber = process.env.TWILIO_FROM_NUMBER || "whatsapp:+14155238886";
+    this.toNumber = process.env.TWILIO_TO_NUMBER || "whatsapp:+212675202336";
 
     if (!accountSid || !authToken) {
       console.warn(
-        "Twilio credentials not found. WhatsApp notifications will be simulated.",
+        "🔧 Twilio credentials not found. WhatsApp notifications will be simulated.",
+        "\n📝 Pour activer Twilio, configurez :",
+        "\n   - TWILIO_ACCOUNT_SID",
+        "\n   - TWILIO_AUTH_TOKEN",
+        "\n   - TWILIO_FROM_NUMBER (optionnel)",
+        "\n   - TWILIO_TO_NUMBER (optionnel)"
       );
-      this.client = null as any;
       return;
     }
 
-    this.client = twilio(accountSid, authToken);
+    try {
+      this.client = twilio(accountSid, authToken);
+      this.isConfigured = true;
+      console.log("✅ Twilio WhatsApp service configuré avec succès");
+      console.log(`📱 Messages envoyés de ${this.fromNumber} vers ${this.toNumber}`);
+    } catch (error) {
+      console.error("❌ Erreur lors de l'initialisation Twilio:", error);
+    }
   }
 
   formatOrderMessage(orderData: OrderData): string {
