@@ -18,8 +18,7 @@
     "start": "node dist/server/node-build.mjs",
     "test": "vitest --run",
     "format.fix": "prettier --write .",
-    "typecheck": "tsc",
-    "vercel-build": "npm run build"
+    "typecheck": "tsc"
   },
   "dependencies": {
     "@types/nodemailer": "^6.4.17",
