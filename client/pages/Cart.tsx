@@ -56,7 +56,7 @@ export default function Cart() {
               onClick={clearCart}
               className="text-gray-500 hover:text-red-600 transition-colors text-sm"
             >
-              🗑️ Vider le panier
+              ���️ Vider le panier
             </button>
           </div>
 
@@ -246,7 +246,7 @@ export default function Cart() {
 
               <div className="flex space-x-4">
                 <Link
-                  to="/"
+                  to="/creations"
                   className="flex-1 bg-gray-200 text-gray-800 py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors font-semibold text-center"
                 >
                   ← Continuer les achats
