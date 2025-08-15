@@ -1,6 +1,6 @@
 [build]
-command = "npm --prefix client ci && npm --prefix client run build"
-publish = "client/dist"
+command = "npm ci && npm run build"
+publish = "dist/spa"
 
 [functions]
 directory = "netlify/functions"
