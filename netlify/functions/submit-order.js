@@ -145,9 +145,18 @@ exports.handler = async (event) => {
     
     console.log("📱 Sending WhatsApp notification to vendor...");
     
+    // Formater les numéros pour WhatsApp Twilio
+    const fromNumber = process.env.TWILIO_FROM_NUMBER.startsWith('whatsapp:')
+      ? process.env.TWILIO_FROM_NUMBER
+      : `whatsapp:${process.env.TWILIO_FROM_NUMBER}`;
+
+    const toNumber = process.env.TWILIO_TO_NUMBER.startsWith('whatsapp:')
+      ? process.env.TWILIO_TO_NUMBER
+      : `whatsapp:${process.env.TWILIO_TO_NUMBER}`;
+
     await client.messages.create({
-      from: process.env.TWILIO_FROM_NUMBER,
-      to: process.env.TWILIO_TO_NUMBER,
+      from: fromNumber,
+      to: toNumber,
       body: message
     });
     
