@@ -46,7 +46,7 @@ export class WhatsAppService {
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
     this.fromNumber = process.env.TWILIO_FROM_NUMBER || "whatsapp:+14155238886";
-    this.toNumber = process.env.TWILIO_TO_NUMBER || "whatsapp:+212675202336";
+    this.toNumber = process.env.TWILIO_TO_NUMBER || "whatsapp:+212661724956";
 
     if (!accountSid || !authToken) {
       console.warn(
