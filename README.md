@@ -91,7 +91,7 @@ netlify/              # Déploiement
 
 - **Téléphone** : +212 661 724 956
 - **Email** : belkadi626@gmail.com
-
+- **Email** : pt.belkhadir.safi@gmail.com
 ---
 
 **🏺 Belkhadir Poterie** - Artisanat marocain authentique depuis des générations
