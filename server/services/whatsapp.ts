@@ -42,25 +42,40 @@ export class WhatsAppService {
   private isConfigured: boolean = false;
 
   constructor() {
-    // Initialize Twilio client with environment variables
+    // Initialize Twilio client with environment variables (support plusieurs noms de variables)
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
 
-    // ✅ Valeurs correctes pour Twilio Sandbox
-    this.fromNumber = process.env.TWILIO_FROM_NUMBER || "whatsapp:+14155238886";
+    this.fromNumber =
+      process.env.TWILIO_FROM_NUMBER ||
+      process.env.TWILIO_WHATSAPP_FROM ||
+      "whatsapp:+14155238886";
     this.toNumber =
-      process.env.TWILIO_TO_NUMBER || "whatsapp:+212661724956"; // 👉 remplace par ton numéro WhatsApp validé
+      process.env.TWILIO_TO_NUMBER ||
+      process.env.TWILIO_WHATSAPP_TO ||
+      "whatsapp:+212661724956"; // 👉 remplace par ton numéro WhatsApp validé
 
     if (!accountSid || !authToken) {
       console.warn(
-        "🔧 Twilio credentials not found. WhatsApp notifications will be simulated.",
+        "🔧 Twilio credentials not found. WhatsApp notifications will be simulées.",
         "\n📝 Pour activer Twilio, configurez :",
         "\n   - TWILIO_ACCOUNT_SID",
         "\n   - TWILIO_AUTH_TOKEN",
-        "\n   - TWILIO_FROM_NUMBER (optionnel)",
-        "\n   - TWILIO_TO_NUMBER (optionnel)"
+        "\n   - TWILIO_FROM_NUMBER ou TWILIO_WHATSAPP_FROM (optionnel)",
+        "\n   - TWILIO_TO_NUMBER ou TWILIO_WHATSAPP_TO (optionnel)"
       );
       return;
+    }
+
+    // Log explicite si numéro d’envoi/réception absent
+    if (!this.fromNumber || !this.toNumber) {
+      console.error(
+        "❌ Variables d'environnement WhatsApp manquantes :",
+        "TWILIO_FROM_NUMBER ou TWILIO_WHATSAPP_FROM =",
+        this.fromNumber,
+        ", TWILIO_TO_NUMBER ou TWILIO_WHATSAPP_TO =",
+        this.toNumber
+      );
     }
 
     try {
