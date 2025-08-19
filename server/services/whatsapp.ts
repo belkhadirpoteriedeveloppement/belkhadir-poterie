@@ -1,6 +1,6 @@
 import twilio from "twilio";
 
-// Types pour le service WhatsApp (compatibles avec les données actuelles)
+// Types pour le service WhatsApp (côté vendeur)
 interface OrderItem {
   product: {
     name: string;
@@ -42,7 +42,6 @@ export class WhatsAppService {
   private isConfigured: boolean = false;
 
   constructor() {
-    // Initialize Twilio client with environment variables (support plusieurs noms de variables)
     const accountSid = process.env.TWILIO_ACCOUNT_SID;
     const authToken = process.env.TWILIO_AUTH_TOKEN;
 
@@ -53,29 +52,13 @@ export class WhatsAppService {
     this.toNumber =
       process.env.TWILIO_TO_NUMBER ||
       process.env.TWILIO_WHATSAPP_TO ||
-      "whatsapp:+212661724956"; // 👉 remplace par ton numéro WhatsApp validé
+      "whatsapp:+212661724956";
 
     if (!accountSid || !authToken) {
       console.warn(
-        "🔧 Twilio credentials not found. WhatsApp notifications will be simulées.",
-        "\n📝 Pour activer Twilio, configurez :",
-        "\n   - TWILIO_ACCOUNT_SID",
-        "\n   - TWILIO_AUTH_TOKEN",
-        "\n   - TWILIO_FROM_NUMBER ou TWILIO_WHATSAPP_FROM (optionnel)",
-        "\n   - TWILIO_TO_NUMBER ou TWILIO_WHATSAPP_TO (optionnel)"
+        "🔧 Twilio credentials not found. WhatsApp notifications seront simulées."
       );
       return;
-    }
-
-    // Log explicite si numéro d’envoi/réception absent
-    if (!this.fromNumber || !this.toNumber) {
-      console.error(
-        "❌ Variables d'environnement WhatsApp manquantes :",
-        "TWILIO_FROM_NUMBER ou TWILIO_WHATSAPP_FROM =",
-        this.fromNumber,
-        ", TWILIO_TO_NUMBER ou TWILIO_WHATSAPP_TO =",
-        this.toNumber
-      );
     }
 
     try {
@@ -112,9 +95,8 @@ export class WhatsAppService {
       message += `   📦 ${item.quantity}x - ${item.total.toFixed(2)} MAD\n\n`;
     });
 
-    // Total et informations importantes
+    // Total
     message += `💰 *TOTAL: ${orderTotal.toFixed(2)} MAD*\n\n`;
-
     message += `⏰ *Délai:* 20-45 jours ouvrables\n`;
     message += `📦 *Livraison:* CTM (frais client)\n`;
     message += `📅 *Reçu le:* ${new Date().toLocaleString("fr-FR", {
@@ -126,54 +108,21 @@ export class WhatsAppService {
       minute: "2-digit",
     })}\n\n`;
 
-    message += `✅ *Action requise:* Contacter le client pour confirmation de la commande`;
-
-    // Log pour debug
-    console.log(`📏 Message WhatsApp: ${message.length} caractères`);
-    if (message.length > 1600) {
-      console.warn("⚠️ Message dépasse la limite WhatsApp de 1600 caractères");
-    }
+    message += `✅ *Action requise:* Contacter le client pour confirmation`;
 
     return message;
   }
 
-  async sendOrderNotification(
-    orderData: OrderData
-  ): Promise<{ success: boolean; message?: string; error?: string }> {
+  async sendOrderNotification(orderData: OrderData): Promise<{ success: boolean; message?: string; error?: string }> {
     try {
       const message = this.formatOrderMessage(orderData);
 
       if (!this.isConfigured || !this.client) {
-        // Mode simulation pour développement
         console.log("📱 WhatsApp Message (MODE SIMULATION):");
         console.log("📤 Destinataire:", this.toNumber);
-        console.log("📝 Message:");
-        console.log("─".repeat(50));
-        console.log(message);
-        console.log("─".repeat(50));
-
-        return {
-          success: true,
-          message: "✅ Notification simulée (consultez les logs serveur)",
-        };
+        console.log("📝 Message:", message);
+        return { success: true, message: "✅ Notification simulée" };
       }
-
-      // Vérifier la longueur du message
-      if (message.length > 1600) {
-        console.warn("⚠️ Message trop long, troncature possible par WhatsApp");
-      }
-
-      // 🔎 Log avant envoi pour debug
-      console.log("DEBUG WhatsApp SEND:", {
-        from: this.fromNumber,
-        to: this.toNumber,
-      });
-
-      if (!this.toNumber) {
-        throw new Error("❌ Aucun destinataire défini pour WhatsApp (to est vide)");
-      }
-
-      console.log("📤 Envoi du message WhatsApp...");
 
       const result = await this.client.messages.create({
         body: message,
@@ -181,44 +130,20 @@ export class WhatsAppService {
         to: this.toNumber,
       });
 
-      console.log("✅ Message WhatsApp envoyé avec succès!");
-      console.log("📧 SID:", result.sid);
-      console.log("📱 Statut:", result.status);
+      console.log("✅ Message WhatsApp envoyé avec succès!", result.sid);
 
-      return {
-        success: true,
-        message: `✅ Notification envoyée via WhatsApp (${this.toNumber})`,
-      };
+      return { success: true, message: `✅ Notification envoyée via WhatsApp` };
     } catch (error) {
       console.error("❌ Erreur lors de l'envoi WhatsApp:", error);
-
-      // Logs d'erreur détaillés pour debug
-      if (error instanceof Error) {
-        console.error("📝 Message d'erreur:", error.message);
-        console.error("🔍 Stack trace:", error.stack);
-      }
-
-      return {
-        success: false,
-        error:
-          error instanceof Error
-            ? `Erreur WhatsApp: ${error.message}`
-            : "Erreur inconnue lors de l'envoi WhatsApp",
-      };
+      return { success: false, error: error instanceof Error ? error.message : "Erreur inconnue" };
     }
   }
 
-  // Méthode utilitaire pour vérifier la configuration
   isReady(): boolean {
     return this.isConfigured && this.client !== null;
   }
 
-  // Méthode pour obtenir les informations de configuration
-  getConfigInfo(): {
-    isConfigured: boolean;
-    fromNumber: string;
-    toNumber: string;
-  } {
+  getConfigInfo(): { isConfigured: boolean; fromNumber: string; toNumber: string } {
     return {
       isConfigured: this.isConfigured,
       fromNumber: this.fromNumber,
