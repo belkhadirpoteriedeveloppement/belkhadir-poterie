@@ -1,4 +1,3 @@
-// WhatsAppService.ts
 import twilio from "twilio";
 
 interface OrderItem {
@@ -39,14 +38,21 @@ export class WhatsAppService {
   private client: twilio.Twilio;
   private fromNumber: string = "whatsapp:+14155238886";
   private toNumber: string = "whatsapp:+16266354931";
+  private isConfigured: boolean = true;
 
   constructor() {
     const accountSid = "AC46c15cc5db07935af2e72fa697f8c335";
     const authToken = "b6e105e3ed7e8e3b2023e9d9a4ba438c";
 
-    this.client = twilio(accountSid, authToken);
-    console.log("✅ Twilio WhatsApp service prêt");
-    console.log(`📱 Envoi des messages vers ${this.toNumber}`);
+    if (accountSid && authToken) {
+      this.client = twilio(accountSid, authToken);
+      this.isConfigured = true;
+      console.log("✅ Twilio WhatsApp service prêt");
+      console.log(`📱 Envoi des messages vers ${this.toNumber}`);
+    } else {
+      console.warn("⚠️ Twilio non configuré correctement");
+      this.isConfigured = false;
+    }
   }
 
   formatOrderMessage(orderData: OrderData): string {
@@ -66,49 +72,18 @@ export class WhatsAppService {
       message += `   📦 ${item.quantity}x - ${item.total.toFixed(2)} MAD\n\n`;
     });
 
-    message += `💰 *TOTAL: ${orderTotal.toFixed(2)} MAD*\n\n`;
-    message += `⏰ *Délai:* 20-45 jours ouvrables\n📦 *Livraison:* CTM (frais client)\n📅 *Reçu le:* ${new Date().toLocaleString("fr-FR", {timeZone: "Africa/Casablanca", day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit"})}\n\n`;
-    message += `✅ *Action requise:* Contacter le client pour confirmation de la commande`;
-
-    return message;
-  }
-
-  async sendOrderNotification(orderData: OrderData): Promise<boolean> {
-    try {
-      const message = this.formatOrderMessage(orderData);
-
-      if (!this.toNumber) {
-        console.error("❌ Destinataire WhatsApp non défini");
-        return false;
-      }
-
-      const result = await this.client.messages.create({
-        body: message,
-        from: this.fromNumber,
-        to: this.toNumber,
-      });
-
-      console.log("✅ Message envoyé via WhatsApp");
-      console.log("📧 SID:", result.sid);
-      console.log("📱 Statut:", result.status);
-
-      return true;
-    } catch (error) {
-      console.error("❌ Erreur lors de l'envoi WhatsApp:", error);
-      return false;
-    }
-  }
-}
-
-// Export singleton
-export const whatsappService = new WhatsAppService();      day: "2-digit",
+    const dateStr = new Date().toLocaleString("fr-FR", {
+      timeZone: "Africa/Casablanca",
+      day: "2-digit",
       month: "2-digit",
       year: "numeric",
       hour: "2-digit",
       minute: "2-digit",
-    })}\n\n`;
+    });
 
-    message += `✅ *Action requise:* Contacter le client pour confirmation`;
+    message += `💰 *TOTAL: ${orderTotal.toFixed(2)} MAD*\n\n`;
+    message += `⏰ *Délai:* 20-45 jours ouvrables\n📦 *Livraison:* CTM (frais client)\n📅 *Reçu le:* ${dateStr}\n\n`;
+    message += `✅ *Action requise:* Contacter le client pour confirmation de la commande`;
 
     return message;
   }
@@ -151,3 +126,6 @@ export const whatsappService = new WhatsAppService();      day: "2-digit",
     };
   }
 }
+
+// Singleton export
+export const whatsappService = new WhatsAppService();
