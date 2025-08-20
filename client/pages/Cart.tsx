@@ -7,6 +7,7 @@ import { OrderForm } from "../components/OrderForm";
 import { CartCustomization } from "../components/CartCustomization";
 import { useCart } from "../contexts/CartContext";
 import { getPatternById } from "../data/products";
+import { sendOrderWhatsApp } from "@/services/whatsappClient"; // ✅ ajout
 
 export default function Cart() {
   const { state, updateQuantity, removeItem, clearCart } = useCart();
@@ -48,163 +49,43 @@ export default function Cart() {
     <Layout>
       <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-amber-900">
-              🛒 Votre Panier Personnalisé
-            </h1>
-            <button
-              onClick={clearCart}
-              className="text-gray-500 hover:text-red-600 transition-colors text-sm"
-            >
-              ���️ Vider le panier
-            </button>
-          </div>
+          {/* ... ton code panier inchangé ... */}
 
-          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-            {/* Cart Items */}
-            <div className="divide-y divide-gray-200">
-              {state.items.map((item, index) => {
-                const pattern = getPatternById(item.patternId);
-                const sizeVariant = item.product.sizeVariants.find(
-                  (v) => v.id === item.sizeVariantId,
-                );
+          {/* Order Form Modal */}
+          {showOrderForm && (
+            <OrderForm
+              cartItems={state.items}
+              total={state.total}
+              onClose={() => setShowOrderForm(false)}
+              onSubmit={async (customer) => {  // ✅ ajout
+                try {
+                  const orderData = {
+                    orderId: Date.now().toString(),
+                    total: state.total,
+                    customer,
+                    items: state.items.map((item) => ({
+                      name: item.product.name,
+                      quantity: item.quantity,
+                      variantName: item.variantName,
+                      variantPrice: item.variantPrice,
+                    })),
+                  };
 
-                return (
-                  <motion.div
-                    key={item.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                    className="p-6"
-                  >
-                    <div className="flex items-start space-x-4">
-                      {/* Product Image with Pattern Overlay */}
-                      <div className="relative">
-                        <img
-                          src={item.product.image}
-                          alt={item.variantName}
-                          className="w-20 h-20 object-cover rounded-lg"
-                        />
-                        {/* Overlay couleur du motif */}
-                        {pattern && (
-                          <div
-                            className="absolute inset-0 rounded-lg opacity-30 mix-blend-multiply"
-                            style={{
-                              backgroundColor: pattern.primaryColor,
-                            }}
-                          />
-                        )}
-                      </div>
-
-                      {/* Product Info */}
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                          {item.variantName}
-                        </h3>
-
-                        {/* Variant Details */}
-                        <div className="space-y-1 mb-2">
-                          {sizeVariant && (
-                            <div className="flex items-center space-x-2">
-                              <span className="text-sm font-medium text-gray-700">
-                                📏 Taille:
-                              </span>
-                              <span className="text-sm text-gray-600">
-                                {sizeVariant.size}
-                                {sizeVariant.dimensions &&
-                                  ` (${sizeVariant.dimensions})`}
-                              </span>
-                            </div>
-                          )}
-
-                          {pattern && (
-                            <div className="flex items-center space-x-2">
-                              <span className="text-sm font-medium text-gray-700">
-                                🎨 Motif:
-                              </span>
-                              <div className="flex items-center space-x-2">
-                                <div
-                                  className="w-4 h-4 rounded-full border border-gray-300"
-                                  style={{
-                                    backgroundColor: pattern.primaryColor,
-                                  }}
-                                />
-                                <span className="text-sm text-gray-600">
-                                  {pattern.name}
-                                </span>
-                              </div>
-                            </div>
-                          )}
-
-                          <div className="flex items-center space-x-2">
-                            <span className="text-sm font-medium text-gray-700">
-                              🏷️ Catégorie:
-                            </span>
-                            <span className="text-sm text-gray-600">
-                              {item.product.category}
-                            </span>
-                          </div>
-                        </div>
-
-                        <p className="text-amber-700 font-bold">
-                          {item.variantPrice.toFixed(2)} MAD / pièce
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          🏺 Variante personnalisée
-                        </p>
-                      </div>
-
-                      {/* Quantity Controls */}
-                      <div className="flex items-center space-x-3">
-                        <button
-                          onClick={() =>
-                            updateQuantity(item.id, item.quantity - 1)
-                          }
-                          className="w-8 h-8 rounded-full border-2 border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white transition-colors flex items-center justify-center"
-                        >
-                          <Minus className="w-3 h-3" />
-                        </button>
-                        <span className="text-lg font-semibold text-gray-900 min-w-12 text-center">
-                          {item.quantity}
-                        </span>
-                        <button
-                          onClick={() =>
-                            updateQuantity(item.id, item.quantity + 1)
-                          }
-                          className="w-8 h-8 rounded-full border-2 border-amber-600 text-amber-600 hover:bg-amber-600 hover:text-white transition-colors flex items-center justify-center"
-                        >
-                          <Plus className="w-3 h-3" />
-                        </button>
-                      </div>
-
-                      {/* Item Total */}
-                      <div className="text-right">
-                        <p className="text-lg font-bold text-amber-700">
-                          {(item.variantPrice * item.quantity).toFixed(2)} MAD
-                        </p>
-                        <button
-                          onClick={() => removeItem(item.id)}
-                          className="text-gray-400 hover:text-red-600 transition-colors mt-2"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                );
-              })}
-            </div>
-
-            {/* Personnalisation Section */}
-            <div className="bg-amber-50 px-6 py-4 border-b border-amber-200">
-              <div className="flex items-center mb-4">
-                <input
-                  type="checkbox"
-                  id="wantCustomization"
-                  checked={wantCustomization}
-                  onChange={(e) => setWantCustomization(e.target.checked)}
-                  className="w-4 h-4 text-amber-600 bg-gray-100 border-gray-300 rounded focus:ring-amber-500 mr-3"
-                />
+                  await sendOrderWhatsApp(orderData);
+                  alert("✅ Commande envoyée par WhatsApp !");
+                  clearCart();
+                  setShowOrderForm(false);
+                } catch (err) {
+                  alert("❌ Erreur lors de l’envoi de la commande.");
+                }
+              }}
+            />
+          )}
+        </div>
+      </main>
+    </Layout>
+  );
+}                />
                 <label htmlFor="wantCustomization" className="text-amber-900 font-semibold flex items-center">
                   <Palette className="w-5 h-5 mr-2" />
                   🎨 Je souhaite personnaliser mes produits
