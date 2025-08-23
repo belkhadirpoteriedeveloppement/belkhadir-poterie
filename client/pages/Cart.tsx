@@ -49,7 +49,6 @@ export default function Cart() {
     <Layout>
       <main className="flex-1 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
-          {/* ... ton code panier inchangé ... */}
 
           {/* Order Form Modal */}
           {showOrderForm && (
@@ -57,7 +56,7 @@ export default function Cart() {
               cartItems={state.items}
               total={state.total}
               onClose={() => setShowOrderForm(false)}
-              onSubmit={async (customer) => {  // ✅ ajout
+              onSubmit={async (customer) => {
                 try {
                   const orderData = {
                     orderId: Date.now().toString(),
@@ -81,64 +80,57 @@ export default function Cart() {
               }}
             />
           )}
-        </div>
-      </main>
-    </Layout>
-  );
-}                />
-                <label htmlFor="wantCustomization" className="text-amber-900 font-semibold flex items-center">
-                  <Palette className="w-5 h-5 mr-2" />
-                  🎨 Je souhaite personnaliser mes produits
-                </label>
-              </div>
 
-              {wantCustomization && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: "auto" }}
-                  exit={{ opacity: 0, height: 0 }}
-                  className="bg-white rounded-lg p-4 border border-amber-300"
+          {/* Personnalisation */}
+          <div className="mt-6">
+            <label htmlFor="wantCustomization" className="text-amber-900 font-semibold flex items-center">
+              <Palette className="w-5 h-5 mr-2" />
+              🎨 Je souhaite personnaliser mes produits
+            </label>
+            {wantCustomization && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                className="bg-white rounded-lg p-4 border border-amber-300 mt-4"
+              >
+                <p className="text-amber-800 mb-4">
+                  Personnalisez chacun de vos produits : couleurs, motifs, tailles, et demandes spéciales.
+                  Nos artisans adapteront chaque pièce selon vos souhaits !
+                </p>
+                <button
+                  onClick={() => setShowCustomization(true)}
+                  className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 font-semibold shadow-lg flex items-center justify-center"
                 >
-                  <p className="text-amber-800 mb-4">
-                    Personnalisez chacun de vos produits : couleurs, motifs, tailles, et demandes spéciales.
-                    Nos artisans adapteront chaque pièce selon vos souhaits !
-                  </p>
-                  <button
-                    onClick={() => setShowCustomization(true)}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 px-6 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-300 font-semibold shadow-lg flex items-center justify-center"
-                  >
-                    <Palette className="w-5 h-5 mr-2" />
-                    🎨 Commencer la personnalisation
-                  </button>
-                </motion.div>
-              )}
+                  <Palette className="w-5 h-5 mr-2" />
+                  🎨 Commencer la personnalisation
+                </button>
+              </motion.div>
+            )}
+          </div>
+
+          {/* Cart Summary */}
+          <div className="bg-gray-50 px-6 py-4 mt-6">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-lg font-semibold text-gray-900">Total</span>
+              <span className="text-2xl font-bold text-amber-700">
+                {state.total.toFixed(2)} MAD
+              </span>
             </div>
 
-            {/* Cart Summary */}
-            <div className="bg-gray-50 px-6 py-4">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-lg font-semibold text-gray-900">
-                  Total
-                </span>
-                <span className="text-2xl font-bold text-amber-700">
-                  {state.total.toFixed(2)} MAD
-                </span>
-              </div>
-
-              <div className="flex space-x-4">
-                <Link
-                  to="/creations"
-                  className="flex-1 bg-gray-200 text-gray-800 py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors font-semibold text-center"
-                >
-                  ← Continuer les achats
-                </Link>
-                <button
-                  onClick={() => setShowOrderForm(true)}
-                  className="flex-1 bg-gradient-to-r from-amber-600 to-amber-700 text-white py-3 px-6 rounded-lg hover:from-amber-700 hover:to-amber-800 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl"
-                >
-                  🎨 Passer la commande
-                </button>
-              </div>
+            <div className="flex space-x-4">
+              <Link
+                to="/creations"
+                className="flex-1 bg-gray-200 text-gray-800 py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors font-semibold text-center"
+              >
+                ← Continuer les achats
+              </Link>
+              <button
+                onClick={() => setShowOrderForm(true)}
+                className="flex-1 bg-gradient-to-r from-amber-600 to-amber-700 text-white py-3 px-6 rounded-lg hover:from-amber-700 hover:to-amber-800 transition-all duration-300 font-semibold shadow-lg hover:shadow-xl"
+              >
+                🎨 Passer la commande
+              </button>
             </div>
           </div>
 
@@ -162,15 +154,6 @@ export default function Cart() {
             />
           )}
         </AnimatePresence>
-
-        {/* Order Form Modal */}
-        {showOrderForm && (
-          <OrderForm
-            cartItems={state.items}
-            total={state.total}
-            onClose={() => setShowOrderForm(false)}
-          />
-        )}
       </main>
     </Layout>
   );
