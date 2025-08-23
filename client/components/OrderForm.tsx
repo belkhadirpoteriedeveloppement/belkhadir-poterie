@@ -1,74 +1,87 @@
-import { useState } from "react";
+import React, { useState } from "react";
 
-export function OrderForm({ cartItems, total, onClose, onSubmit }) {
+const OrderForm: React.FC = () => {
   const [customer, setCustomer] = useState({
     name: "",
+    surname: "",
+    email: "",
     phone: "",
     address: "",
   });
 
-  const handleChange = (e) => {
-    setCustomer({ ...customer, [e.target.name]: e.target.value });
+  const [items, setItems] = useState<any[]>([]); // tes articles de commande
+  const [orderTotal, setOrderTotal] = useState(0);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setCustomer({ ...customer, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (onSubmit) {
-      onSubmit(customer); // ✅ appel du Cart
+
+    const customerOrderData = {
+      customer,
+      items,
+      orderTotal,
+    };
+
+    try {
+      const res = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(customerOrderData),
+      });
+
+      const data = await res.json();
+      console.log("✅ Order submitted:", data);
+      alert("Commande envoyée avec succès !");
+    } catch (error) {
+      console.error("❌ Error submitting order:", error);
     }
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-      <div className="bg-white p-6 rounded-xl shadow-lg w-full max-w-md">
-        <h2 className="text-xl font-bold text-amber-900 mb-4">
-          📝 Finaliser votre commande
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            type="text"
-            name="name"
-            placeholder="Nom complet"
-            value={customer.name}
-            onChange={handleChange}
-            required
-            className="w-full border p-2 rounded-lg"
-          />
-          <input
-            type="tel"
-            name="phone"
-            placeholder="Téléphone"
-            value={customer.phone}
-            onChange={handleChange}
-            required
-            className="w-full border p-2 rounded-lg"
-          />
-          <textarea
-            name="address"
-            placeholder="Adresse de livraison"
-            value={customer.address}
-            onChange={handleChange}
-            required
-            className="w-full border p-2 rounded-lg"
-          />
-
-          <div className="flex justify-between items-center">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 bg-gray-300 rounded-lg"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700"
-            >
-              ✅ Confirmer
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+    <form onSubmit={handleSubmit}>
+      <input
+        name="name"
+        placeholder="Prénom"
+        value={customer.name}
+        onChange={handleChange}
+        required
+      />
+      <input
+        name="surname"
+        placeholder="Nom"
+        value={customer.surname}
+        onChange={handleChange}
+        required
+      />
+      <input
+        type="email"
+        name="email"
+        placeholder="Email"
+        value={customer.email}
+        onChange={handleChange}
+        required
+      />
+      <input
+        name="phone"
+        placeholder="Téléphone"
+        value={customer.phone}
+        onChange={handleChange}
+        required
+      />
+      <textarea
+        name="address"
+        placeholder="Adresse complète"
+        value={customer.address}
+        onChange={handleChange}
+        required
+      />
+      <button type="submit">Commander</button>
+    </form>
   );
-}
+};
+
+export default OrderForm;
