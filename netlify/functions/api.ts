@@ -1,59 +1,51 @@
-import { Handler } from '@netlify/functions';
-import express from 'express';
-import serverless from 'serverless-http';
-import cors from 'cors';
+// netlify/functions/api.ts
+import type { Handler, HandlerEvent, HandlerContext } from "@netlify/functions";
+import { handler as submitOrderHandler } from "./submit-order";
 
-// Import routes
-import { handleDemo } from '../../server/routes/demo';
-import { submitOrder } from '../../server/routes/orders';
+export const handler: Handler = async (
+  event: HandlerEvent,
+  context: HandlerContext
+) => {
+  const path = event.path || event.rawUrl || "";
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Content-Type": "application/json",
+  };
 
-const app = express();
+  if (event.httpMethod === "OPTIONS") {
+    return { statusCode: 200, headers, body: "" };
+  }
 
-// Middleware
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://belkhadir-poterie.netlify.app', 'https://belkhadir-poterie.com']
-    : ['http://localhost:8080', 'http://localhost:3000'],
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+  try {
+    if (path.includes("/orders") && event.httpMethod === "POST") {
+      return await submitOrderHandler(event, context);
+    }
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+    if (path.includes("/ping") && event.httpMethod === "GET") {
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          message: "Netlify API Function Active - Belkhadir Poterie",
+          timestamp: new Date().toISOString(),
+          environment: process.env.NODE_ENV,
+        }),
+      };
+    }
 
-// Health check
-app.get('/ping', (_req, res) => {
-  res.json({ 
-    message: 'Netlify API Function Active - Belkhadir Poterie', 
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV 
-  });
-});
-
-// Demo route
-app.get('/demo', handleDemo);
-
-// Orders API - Main route for WhatsApp notifications
-app.post('/orders', submitOrder);
-
-// 404 handler
-app.use('*', (req, res) => {
-  res.status(404).json({ 
-    error: 'Route not found',
-    path: req.originalUrl,
-    method: req.method 
-  });
-});
-
-// Error handler
-app.use((error: any, req: any, res: any, next: any) => {
-  console.error('API Error:', error);
-  res.status(500).json({ 
-    error: 'Internal server error',
-    message: error.message 
-  });
-});
-
-// Export as Netlify Function
-export const handler: Handler = serverless(app);
+    return {
+      statusCode: 404,
+      headers,
+      body: JSON.stringify({ error: "Route not found", path, method: event.httpMethod }),
+    };
+  } catch (error: any) {
+    console.error("❌ API Error:", error);
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({ error: "Internal server error", message: error.message }),
+    };
+  }
+};
